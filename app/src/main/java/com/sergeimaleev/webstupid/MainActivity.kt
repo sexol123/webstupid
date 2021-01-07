@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
                     setReloadButton(LoadingSTATE.LOADED)
                     setProgressBarState(LoadingSTATE.LOADED)
                     setGoButtonState(LoadingSTATE.LOADED)
+                    currentFocus?.clearFocus()
                     url?.let(input::setText)
                 }
 
