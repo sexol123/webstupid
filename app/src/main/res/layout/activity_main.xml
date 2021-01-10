@@ -85,6 +85,7 @@
         android:layout_height="wrap_content"
         android:indeterminate="false"
         android:progress="0"
+        android:max="100"
         android:progressTint="@color/design_default_color_primary"
         android:visibility="gone" />
 

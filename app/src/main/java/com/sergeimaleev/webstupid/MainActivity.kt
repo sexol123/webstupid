@@ -1,6 +1,7 @@
 package com.sergeimaleev.webstupid
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Bundle
@@ -18,6 +19,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var inputManager: InputMethodManager
     private lateinit var binding: ActivityMainBinding
+
+    override fun onNewIntent(intent: Intent?) {
+        handleSearchIntent(intent)
+        super.onNewIntent(intent)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +65,9 @@ class MainActivity : AppCompatActivity() {
                     setReloadButton(LoadingSTATE.LOADING)
                     setProgressBarState(LoadingSTATE.LOADING)
                     showGoBack(webWiew.canGoBack())
+                    if (input.text.isNullOrEmpty()) {
+                        url?.let(input::setText)
+                    }
                 }
 
                 override fun onReceivedError(
@@ -140,6 +149,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        handleSearchIntent(intent)
+    }
 
     override fun onResume() {
         super.onResume()
@@ -159,6 +172,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun handleSearchIntent(newIntent: Intent?) {
+        newIntent?.dataString?.let {
+            workWithInput(it)?.let { finalQuery ->
+                setProgressBarState(LoadingSTATE.LOADING)
+                binding.webWiew.loadUrl(finalQuery)
+            }
+        }
+    }
+
     private fun workWithInput(inputTxt: CharSequence?): String? {
         return if (inputTxt.isNullOrBlank()) {
             null
@@ -169,8 +192,12 @@ class MainActivity : AppCompatActivity() {
         } else if (inputTxt.startsWith(WWW)) {
             HTTPS + inputTxt
         } else {
-            "https://www.google.com/search?q=$inputTxt$SOURCE_ID"
+            "${getDefaultSearch()}$inputTxt"
         }
+    }
+
+    private fun getDefaultSearch(): String {
+        return GOOGLE_SEARCH
     }
 
     private fun showGoBack(show: Boolean) {
@@ -248,7 +275,7 @@ class MainActivity : AppCompatActivity() {
         private const val HTTPS = "https://"
         private const val WWW = "www."
 
-        private const val SOURCE_ID = "&sourceid=chrome-mobile"
+        private const val GOOGLE_SEARCH = "https://www.google.com/search?q="
     }
 }
 
