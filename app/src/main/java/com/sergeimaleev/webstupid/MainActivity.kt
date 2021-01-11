@@ -50,6 +50,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             webWiew.webViewClient = object : WebViewClient() {
+                override fun onLoadResource(view: WebView?, url: String?) {
+                    binding.webWiew.isVisible = true
+                    super.onLoadResource(view, url)
+                }
+
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     setReloadButton(LoadingSTATE.LOADED)

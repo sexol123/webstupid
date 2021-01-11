@@ -4,10 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <LinearLayout
+        android:id="@+id/search_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:gravity="center_vertical"
@@ -90,6 +92,7 @@
         android:visibility="gone" />
 
     <WebView
+        android:visibility="gone"
         android:id="@+id/webWiew"
         android:layout_width="match_parent"
         android:layout_height="0dp"
