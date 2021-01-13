@@ -42,8 +42,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="http" />
@@ -51,6 +51,9 @@
             </intent-filter>
 
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -64,6 +67,9 @@
             <!--  For these schemes where any of these particular MIME types
                   have been supplied, we are a good candidate. -->
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -78,6 +84,9 @@
                 <data android:mimeType="application/vnd.wap.xhtml+xml" />
             </intent-filter>
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.WEB_SEARCH" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -88,6 +97,9 @@
             </intent-filter>
 
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

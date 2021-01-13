@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import com.sergeimaleev.webstupid.databinding.ActivityMainBinding
 
@@ -150,6 +151,36 @@ class MainActivity : AppCompatActivity() {
             }
             goBack.setOnClickListener {
                 webWiew.goBack()
+            }
+
+            goOptions.setOnClickListener { view ->
+                PopupMenu(view.context, view).apply {
+                    this.setOnMenuItemClickListener {
+                        when (it.groupId) {
+                            1 -> {
+                                true
+                            }
+                            2 -> {
+                                true
+                            }
+                        }
+
+                        false
+                    }
+
+
+                    with(menu) {
+                        val historySubMenu = this.addSubMenu(R.string.history)
+                        historySubMenu.setHeaderTitle(R.string.history)
+                        historySubMenu.add("1")
+                        historySubMenu.add("2")
+
+                        val bookmarksSubMenu = this.addSubMenu(R.string.bookmarks)
+                        bookmarksSubMenu.setHeaderTitle(R.string.bookmarks)
+                        bookmarksSubMenu.add("1")
+                        bookmarksSubMenu.add("2")
+                    }
+                }.show()
             }
         }
     }
