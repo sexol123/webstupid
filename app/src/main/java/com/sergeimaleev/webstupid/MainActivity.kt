@@ -2,14 +2,18 @@ package com.sergeimaleev.webstupid
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
+import android.view.View.SYSTEM_UI_LAYOUT_FLAGS
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
@@ -56,6 +60,7 @@ class MainActivity : AppCompatActivity() {
                 allowContentAccess = true
                 javaScriptEnabled = true
                 builtInZoomControls = false
+                allowFileAccess = true
                 cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                 javaScriptCanOpenWindowsAutomatically = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
@@ -124,40 +129,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            webWiew.webChromeClient = object : WebChromeClient() {
-
-                override fun onPermissionRequest(request: PermissionRequest?) {
-                    request?.grant(request.resources)
-                }
-
-                override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                    super.onProgressChanged(view, newProgress)
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        binding.progressbar.setProgress(newProgress, true)
-                    } else {
-                        binding.progressbar.progress = newProgress
-                    }
-                }
-
-                /*  override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
-                      super.onShowCustomView(view, callback)
-                      //searchBar.isVisible = false
-                      webWiew.saveState(savedInstanceState ?: Bundle())
-                      requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                      //webWiew.isVisible = false
-                      *//*VideoView(binding.root.context).apply {
-
-                    }*//*
-                }
-
-                override fun onHideCustomView() {
-                    super.onHideCustomView()
-                    webWiew.onPause()
-                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                   *//* webWiew.isVisible = true*//*
-                    //searchBar.isVisible = true
-                }*/
-            }
+            webWiew.webChromeClient = MyChromeWebClient()
 
             input.setOnEditorActionListener { v, actionId, event ->
                 when (actionId) {
@@ -261,7 +233,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun handleSearchIntent(newIntent: Intent?) {
         newIntent?.dataString?.let {
             workWithInput(it)?.let { finalQuery ->
@@ -363,6 +334,62 @@ class MainActivity : AppCompatActivity() {
             currentFocus?.windowToken,
             InputMethodManager.HIDE_NOT_ALWAYS
         )
+    }
+
+    inner class MyChromeWebClient : WebChromeClient() {
+
+        private var mCustomViewCallback: WebChromeClient.CustomViewCallback? = null
+
+        //private var mOriginalOrientation: Int? = null
+        private var mOriginalSystemUiVisibility: Int? = null
+        private var mCustomView: View? = null
+        private var mFullScreenContainer: FrameLayout? = null
+
+        override fun onPermissionRequest(request: PermissionRequest?) {
+            request?.grant(request.resources)
+        }
+
+        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+            super.onProgressChanged(view, newProgress)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                binding.progressbar.setProgress(newProgress, true)
+            } else {
+                binding.progressbar.progress = newProgress
+            }
+        }
+
+        override fun onShowCustomView(
+            paramView: View?,
+            callback: WebChromeClient.CustomViewCallback?
+        ) {
+            if (this.mCustomView != null) {
+                onHideCustomView()
+                return
+            }
+
+            mCustomView = paramView
+            mOriginalSystemUiVisibility = window.decorView.systemUiVisibility
+            //mOriginalOrientation = requestedOrientation
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            mCustomViewCallback = callback
+            (window.decorView as FrameLayout).addView(
+                mCustomView, FrameLayout.LayoutParams(
+                    -1,
+                    -1
+                )
+            )
+            window.decorView.systemUiVisibility = 3846 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        }
+
+        override fun onHideCustomView() {
+            (window.decorView as FrameLayout).removeView(mCustomView)
+            mCustomView = null
+            window.decorView.systemUiVisibility =
+                mOriginalSystemUiVisibility ?: SYSTEM_UI_LAYOUT_FLAGS
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+            mCustomViewCallback?.onCustomViewHidden()
+            mCustomViewCallback = null
+        }
     }
 
     companion object {
