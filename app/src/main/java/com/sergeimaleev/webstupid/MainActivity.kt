@@ -26,6 +26,16 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        binding.webWiew.saveState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        binding.webWiew.restoreState(savedInstanceState)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.bind(
@@ -36,7 +46,9 @@ class MainActivity : AppCompatActivity() {
             )
         )
         setContentView(binding.root)
-
+        savedInstanceState?.let {
+            binding.webWiew.restoreState(it)
+        }
         inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         with(binding) {
@@ -46,8 +58,16 @@ class MainActivity : AppCompatActivity() {
                 builtInZoomControls = false
                 cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                 javaScriptCanOpenWindowsAutomatically = true
-                mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 defaultTextEncodingName = "utf-8"
+                setSupportMultipleWindows(true)
+                loadWithOverviewMode = true
+                databaseEnabled = true
+                mediaPlaybackRequiresUserGesture = true
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    offscreenPreRaster = true
+                }
+                domStorageEnabled = true
             }
 
             webWiew.webViewClient = object : WebViewClient() {
@@ -114,6 +134,25 @@ class MainActivity : AppCompatActivity() {
                         binding.progressbar.progress = newProgress
                     }
                 }
+
+                /*  override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+                      super.onShowCustomView(view, callback)
+                      //searchBar.isVisible = false
+                      webWiew.saveState(savedInstanceState ?: Bundle())
+                      requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                      //webWiew.isVisible = false
+                      *//*VideoView(binding.root.context).apply {
+
+                    }*//*
+                }
+
+                override fun onHideCustomView() {
+                    super.onHideCustomView()
+                    webWiew.onPause()
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                   *//* webWiew.isVisible = true*//*
+                    //searchBar.isVisible = true
+                }*/
             }
 
             input.setOnEditorActionListener { v, actionId, event ->
@@ -192,11 +231,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        binding.webWiew.onResume()
+        binding.apply {
+            webWiew.onResume()
+            webWiew.resumeTimers()
+        }
     }
 
     override fun onPause() {
-        binding.webWiew.onPause()
+        binding.apply {
+            webWiew.onPause()
+            webWiew.pauseTimers()
+        }
         super.onPause()
     }
 

@@ -36,7 +36,6 @@
             android:name="com.sergeimaleev.webstupid.MainActivity"
             android:configChanges="keyboard|screenSize|orientation"
             android:exported="true"
-            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
