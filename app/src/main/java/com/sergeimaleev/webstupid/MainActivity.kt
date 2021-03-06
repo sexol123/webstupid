@@ -83,6 +83,8 @@ class MainActivity : AppCompatActivity() {
                     setGoButtonState(LoadingSTATE.LOADED)
                     currentFocus?.clearFocus()
                     url?.let(input::setText)
+                    showGoBack(webWiew.canGoBack())
+                    showGoForward(webWiew.canGoForward())
                 }
 
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -91,6 +93,7 @@ class MainActivity : AppCompatActivity() {
                     setReloadButton(LoadingSTATE.LOADING)
                     setProgressBarState(LoadingSTATE.LOADING)
                     showGoBack(webWiew.canGoBack())
+                    showGoForward(webWiew.canGoForward())
                     if (input.text.isNullOrEmpty()) {
                         url?.let(input::setText)
                     }
@@ -104,6 +107,7 @@ class MainActivity : AppCompatActivity() {
                     setGoButtonState(LoadingSTATE.DEFAULT)
                     super.onReceivedError(view, request, error)
                     showGoBack(webWiew.canGoBack())
+                    showGoForward(webWiew.canGoForward())
                 }
 
                 override fun onReceivedSslError(
@@ -190,6 +194,10 @@ class MainActivity : AppCompatActivity() {
             }
             goBack.setOnClickListener {
                 webWiew.goBack()
+            }
+
+            goForward.setOnClickListener {
+                webWiew.goForward()
             }
 
             goOptions.setOnClickListener { view ->
@@ -284,6 +292,12 @@ class MainActivity : AppCompatActivity() {
     private fun showGoBack(show: Boolean) {
         binding.apply {
             goBack.isVisible = show
+        }
+    }
+
+    private fun showGoForward(show: Boolean) {
+        binding.apply {
+            goForward.isVisible = show
         }
     }
 
