@@ -106,11 +106,28 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_height="36dp"
+        android:gravity="center_horizontal"
         android:orientation="horizontal"
         android:paddingHorizontal="8dp"
         android:paddingVertical="4dp">
+
+        <ImageButton
+            android:id="@+id/go_home"
+            style="@style/RegularImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:backgroundTint="@color/white"
+            android:duplicateParentState="true"
+            android:src="@drawable/ic_home_24"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/go_back"
@@ -120,6 +137,7 @@
             android:layout_margin="4dp"
             android:backgroundTint="@color/white"
             android:src="@drawable/ic_arrow_back_24"
+            tools:visibility="visible"
             android:visibility="gone" />
 
         <ImageButton
@@ -130,6 +148,23 @@
             android:layout_margin="4dp"
             android:backgroundTint="@color/white"
             android:src="@drawable/ic_arrow_forward"
+            tools:visibility="visible"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/go_new_tab"
+            style="@style/RegularImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:backgroundTint="@color/white"
+            android:duplicateParentState="true"
+            android:src="@drawable/ic_add_circle_outline_24"
             android:visibility="gone" />
 
     </LinearLayout>

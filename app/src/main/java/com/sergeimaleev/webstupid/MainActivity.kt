@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
                 javaScriptCanOpenWindowsAutomatically = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 defaultTextEncodingName = "utf-8"
-                setSupportMultipleWindows(true)
+                setSupportMultipleWindows(false)
                 loadWithOverviewMode = true
                 databaseEnabled = true
                 mediaPlaybackRequiresUserGesture = true
@@ -108,6 +108,7 @@ class MainActivity : AppCompatActivity() {
                     url?.let(input::setText)
                     showGoBack(webWiew.canGoBack())
                     showGoForward(webWiew.canGoForward())
+                    showGoHome(webWiew.canGoBackOrForward(1).not())
                 }
 
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -117,6 +118,7 @@ class MainActivity : AppCompatActivity() {
                     setProgressBarState(LoadingSTATE.LOADING)
                     showGoBack(webWiew.canGoBack())
                     showGoForward(webWiew.canGoForward())
+                    showGoHome(webWiew.canGoBackOrForward(1).not())
                     if (input.text.isNullOrEmpty()) {
                         url?.let(input::setText)
                     }
@@ -131,6 +133,7 @@ class MainActivity : AppCompatActivity() {
                     super.onReceivedError(view, request, error)
                     showGoBack(webWiew.canGoBack())
                     showGoForward(webWiew.canGoForward())
+                    showGoHome(webWiew.canGoBackOrForward(1).not())
                 }
 
                 override fun onReceivedSslError(
@@ -188,8 +191,6 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
 
-
-
             input.setOnEditorActionListener { v, actionId, event ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_SEARCH, EditorInfo.IME_ACTION_GO, EditorInfo.IME_ACTION_DONE -> {
@@ -230,6 +231,12 @@ class MainActivity : AppCompatActivity() {
             goForward.setOnClickListener {
                 webWiew.goForward()
             }
+
+            goHome.setOnClickListener {
+                //setHomeState()
+            }
+
+            goNewTab.setOnClickListener {}
 
             goOptions.setOnClickListener { view ->
                 PopupMenu(view.context, view).apply {
@@ -329,6 +336,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setHomeState() {
+        with(binding) {
+            webWiew.stopLoading()
+            input.text?.clear()
+            setReloadButton(LoadingSTATE.DEFAULT)
+            setProgressBarState(LoadingSTATE.DEFAULT)
+            setGoButtonState(LoadingSTATE.DEFAULT)
+            showGoHome(false)
+            webWiew.visibility = View.GONE
+            webWiew.clearHistory()
+        }
+    }
+
     private fun workWithInput(inputTxt: CharSequence?): String? {
         return if (inputTxt.isNullOrBlank()) {
             null
@@ -351,6 +371,12 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             goBack.isVisible = show
         }
+    }
+
+    private fun showGoHome(show: Boolean) {
+        /*binding.apply {
+            goHome.isVisible = show
+        }*/
     }
 
     private fun showGoForward(show: Boolean) {
