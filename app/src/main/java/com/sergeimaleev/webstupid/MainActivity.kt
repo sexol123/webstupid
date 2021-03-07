@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
                     handler: SslErrorHandler?,
                     error: SslError?
                 ) {
-                    handler?.proceed()
+                    super.onReceivedSslError(view, handler, error)
                     Toast.makeText(
                         root.context,
                         "Ssl Error " + error?.primaryError.toString(),
