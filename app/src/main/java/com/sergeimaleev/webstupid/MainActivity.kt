@@ -1,11 +1,17 @@
 package com.sergeimaleev.webstupid
 
+import android.Manifest
+import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.net.http.SslError
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -17,12 +23,17 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
+import com.google.android.material.snackbar.Snackbar
 import com.sergeimaleev.webstupid.databinding.ActivityMainBinding
+
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var cookie: CookieManager
     private lateinit var inputManager: InputMethodManager
+    private lateinit var downloadManager: DownloadManager
     private lateinit var binding: ActivityMainBinding
 
     override fun onNewIntent(intent: Intent?) {
@@ -53,7 +64,9 @@ class MainActivity : AppCompatActivity() {
         savedInstanceState?.let {
             binding.webWiew.restoreState(it)
         }
+
         inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
         with(binding) {
             with(webWiew.settings) {
@@ -73,6 +86,11 @@ class MainActivity : AppCompatActivity() {
                     offscreenPreRaster = true
                 }
                 domStorageEnabled = true
+            }
+
+            cookie = CookieManager.getInstance().apply {
+                setAcceptCookie(true)
+                setAcceptThirdPartyCookies(webWiew, true)
             }
 
             webWiew.webViewClient = object : WebViewClient() {
@@ -130,6 +148,47 @@ class MainActivity : AppCompatActivity() {
             }
 
             webWiew.webChromeClient = MyChromeWebClient()
+
+            webWiew.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+
+                if (!hasWriteStoragePermission()) {
+                    Snackbar.make(
+                        root,
+                        "No permissions, please enable a write permission",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                    return@setDownloadListener
+                }
+
+                val title = URLUtil.guessFileName(url, contentDisposition, mimetype)
+
+                val request = DownloadManager.Request(Uri.parse(url)).apply {
+                    allowScanningByMediaScanner()
+                    setAllowedOverMetered(true)
+                    setAllowedOverRoaming(true)
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        setRequiresCharging(false)
+                    }
+                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED) //Notify client once download is completed!
+                    setTitle(title)
+                    setDestinationInExternalPublicDir(
+                        Environment.DIRECTORY_DOWNLOADS,
+                        title
+                    )
+                }
+
+                val cookies = cookie.getCookie(url)
+                request.addRequestHeader("cookie", cookies)
+
+                downloadManager.enqueue(request)
+                Snackbar.make(
+                    root,
+                    "$title added to downloading..",  //To notify the Client that the file is being downloaded
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+
+
 
             input.setOnEditorActionListener { v, actionId, event ->
                 when (actionId) {
@@ -201,6 +260,34 @@ class MainActivity : AppCompatActivity() {
                     }
                 }.show()
             }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            REQUEST_PERMISSIONS_CODE_WRITE_STORAGE -> {
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    val activity = this
+                    Snackbar.make(
+                        binding.root,
+                        "No permissions, please enable a write permission",
+                        Snackbar.LENGTH_INDEFINITE
+                    ).apply {
+                        setAction("OK") {
+                            ActivityCompat.requestPermissions(
+                                activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                REQUEST_PERMISSIONS_CODE_WRITE_STORAGE
+                            )
+                        }
+                    }.show()
+                }
+
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
@@ -329,6 +416,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun hasWriteStoragePermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return true
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    REQUEST_PERMISSIONS_CODE_WRITE_STORAGE
+                )
+
+                return false
+            }
+        }
+
+        return true
+    }
+
     private fun hideKeyboard() {
         inputManager.hideSoftInputFromWindow(
             currentFocus?.windowToken,
@@ -398,6 +506,8 @@ class MainActivity : AppCompatActivity() {
         private const val WWW = "www."
 
         private const val GOOGLE_SEARCH = "https://www.google.com/search?q="
+
+        private const val REQUEST_PERMISSIONS_CODE_WRITE_STORAGE = 666
     }
 }
 

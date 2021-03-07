@@ -73,6 +73,7 @@
             android:textSize="14sp" />
 
         <ImageButton
+            android:visibility="gone"
             android:id="@+id/go_options"
             style="@style/RegularImageButton"
             android:layout_width="wrap_content"
